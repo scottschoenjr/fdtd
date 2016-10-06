@@ -5,9 +5,23 @@
 %   Function creates a Gaussian-pulse excitation with input parameters for
 %   its initial time, central frequency, bandwidth, and time step.
 %
+% Inputs
+%   t         - Time vector [s]
+%   dt        - Time Step [s]
+%   f0        - Center frequency of pulse [Hz]
+%   BW        - Fractional bandwidth of pulse
+%   offset    - Time offset from center of signal
+%   bps       - Use bubble dynamics (used if bps == 1)
+%   plotPulse - Display waveform and spectrum (plotted if == 1)
 %
+% Returns
+%   excit_b - Time series pulse
 %
+% Change Log
+%   2013XXXX Dr Costas Arvanitis   Original
+%   201610XX Scott Schoen Jr       Formatting, added plotting option
 %
+%**************************************************************************
 
 function excit_b = pulse( t, dt, f0, BW, offset, bps, plotPulse)
 
@@ -63,11 +77,23 @@ if plotPulse
     
     
     figure()
+    
     % Plot the time series
-    subplot( 3, 1, 1 )
+    
+    subplot( 2, 1, 1 )
     plot( t(startIndex:endIndex).*1E3,  excit_b(startIndex:endIndex) );
     xlabel( 'Time [ms]' );
     ylabel( 'Amplitude [AU]' );
+    
+    % Plot the frequency content
+    subplot( 2, 1, 2 )
+    fVector = linspace( 0, Fs, length(t(startIndex:endIndex)) );
+    spectrum = abs( fft( excit_b(startIndex:endIndex) ) );
+    spectrumNorm = spectrum./max(spectrum);
+    plot( fVector, spectrumNorm );
+    xlabel( 'Frequency [kHz]' );
+    xlim( [0, Fs./2] );
+    ylabel( 'Normalized Amplitude [AU]' );
     
     % figure (1)
     % subplot(2,2,1);title('Time Trace','FontWeight','bold')

@@ -10,6 +10,7 @@
 %             © Costas Arvanitis BWH, Harvard University 2013 
 %
 %**************************************************************************
+
 clear all;
 close all;
 clc;
@@ -34,8 +35,7 @@ plotPropagation = 1;
 % Add necessary paths
 addpath( genpath( '..\pam_recon' ) );
 
-% Load 2D density, sound speed, and attenutaion parameters
-Sdir='..\data\simulated'; 
+% Load density, sound speed, and attenutaion parameters from data file
 dataFile = ...
     '..\..\orig\data\simulated\head_3dproperties_thr700_extcrop04_int01.mat';
 domain = load( dataFile );
