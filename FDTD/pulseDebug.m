@@ -5,4 +5,6 @@ BW = 0.3;
 offset = 0;
 plotPulse = 1;
 
-x = pulse( t, dt, f0, BW, offset, 0, plotPulse);
+expArg = 2.*omegaVec.^(2)./
+
+x = pulse( t, f0, BW, offset, 0, plotPulse);

@@ -23,7 +23,7 @@
 %
 %**************************************************************************
 
-function excit_b = pulse( t, dt, f0, BW, offset, bps, plotPulse)
+function pulseSignal = pulse( t, dt, f0, BW, offset, bps, plotPulse)
 
 % If not specified, do not plot pulse
 if nargin < 7
@@ -31,35 +31,13 @@ if nargin < 7
 end
 
 % Define Gaussian pulse excitation
-excit_b = gauspuls(t-t(end)/2, f0, BW);
+pulseSignal = gauspuls(t - offset, f0, BW);
 
-% Compute the frequency vector
-Fs = 1./dt;
-numPoints = length(t);
-startValue = -(numPoints./2) + 1 - 0.5;
-endValue = length(t)/2 - 0.5;
-omegaVector = (Fs).*2.*pi.*(startValue : endValue)./numPoints;
-
-% Define the excitation vector, which is shifted to fit the simulation
-% timescale
-timeShift = (t(end))/4*offset;
-phaseShift = -1j.*omegaVector.*timeShift;
-% Get the shifted signal in the frequency domain
-pulseFD = fftshift( fft(excit_b) ).*exp( phaseShift );
-% Transform back to time domain and take real part
-pulseTD = real( ifft( ifftshift( pulseFD ) ) );
-
-% Return the excitation vector
-excit_b = pulseTD;
-
-[yy tt]=max(abs(excit_b));
-if excit_b(tt)<0
-aa=-1.0;
-else
-    aa=1.0;
+% Ensure maximum is at +1
+[maxValue, maxIndex] = max( abs(pulseSignal) );
+if pulseSignal(maxIndex) < 0
+    pulseSignal = -1.*pulseSignal;
 end
-excit_b=aa*excit_b;
-
 
 % Plot pulse if prompted
 if plotPulse
@@ -79,16 +57,17 @@ if plotPulse
     figure()
     
     % Plot the time series
-    
     subplot( 2, 1, 1 )
-    plot( t(startIndex:endIndex).*1E3,  excit_b(startIndex:endIndex) );
+    plot( t(startIndex:endIndex).*1E3,  pulseSignal(startIndex:endIndex) );
     xlabel( 'Time [ms]' );
     ylabel( 'Amplitude [AU]' );
     
     % Plot the frequency content
     subplot( 2, 1, 2 )
+    dt = t(2) - t(1); % Sample step [s]
+    Fs = 1./dt;       % Sampling frequency [Hz]
     fVector = linspace( 0, Fs, length(t(startIndex:endIndex)) );
-    spectrum = abs( fft( excit_b(startIndex:endIndex) ) );
+    spectrum = abs( fft( pulseSignal(startIndex:endIndex) ) );
     spectrumNorm = spectrum./max(spectrum);
     plot( fVector, spectrumNorm );
     xlabel( 'Frequency [kHz]' );
@@ -114,8 +93,8 @@ end
 if (bps=='y')         
 bbl=load('C:\work_material\data\in_vivo\monkey\PUS\06232012\nhp01\Registered_data\mr_ct_simdata\analysis\point sources\BubbleSim_pulse_440.mat');
 dt1=bbl.simulation.tr(2);
-excit_b=bbl.simulation.pr(1:(dt/dt1):end);
-excit_b=[excit_b;excit_b(end)*ones(length(t)-length(excit_b),1)];
+pulseSignal=bbl.simulation.pr(1:(dt/dt1):end);
+pulseSignal=[pulseSignal;pulseSignal(end)*ones(length(t)-length(pulseSignal),1)];
 end
 % excit_b=excit_b/sum(abs(excit_b));
 

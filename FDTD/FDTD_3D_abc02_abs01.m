@@ -118,7 +118,7 @@ loc4 = round( [xDim/2, yDim/2 - 2.*deltaPx, zDim/2 ] );
 loc5 = round( [xDim/2, yDim/2 + 2.*deltaPx, zDim/2 ] );
 excit_loc = round( [ loc1; loc2; loc3; loc4; loc5 ] ); %multiple sources locations
 offset = 2.3;
-excit_b = (1480*1000)/(1300*1562)*0.2*pulse(t,dt,f0,BW,offset,bps);  % 21.45   with bubbles  b7.868x with bubble excitation and 5.655 at 440,  4 at 880 kHz and  3.268 at 13200 kHz pulse
+excit_b = (1480*1000)/(1300*1562)*0.2*pulse(t, f0, BW, offset, bps, 0);  % 21.45   with bubbles  b7.868x with bubble excitation and 5.655 at 440,  4 at 880 kHz and  3.268 at 13200 kHz pulse
 sum(abs(fft(excit_b))/length(t))
 % fig=figure;
 pdata=zeros(xDim,zDim,length(t));
