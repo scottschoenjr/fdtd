@@ -23,15 +23,26 @@
 %
 %**************************************************************************
 
-function pulseSignal = pulse( t, dt, f0, BW, offset, bps, plotPulse)
+function pulseSignal = pulse( timeVector, f0, BW, offset, bps, plotPulse)
+
+% Apply shift
+t = timeVector - offset;
 
 % If not specified, do not plot pulse
-if nargin < 7
+if nargin < 6
     plotPulse = 0;
 end
 
-% Define Gaussian pulse excitation
-pulseSignal = gauspuls(t - offset, f0, BW);
+% Define Gaussian pulse excitation here. This function replaces the 
+% gauspuls function to minimize required toolboxes. We'll define parameters
+% like the BW ratio, even though they're not adjustable from the function
+% call.
+bwRatio = -6;  % [dB] Determines how quickly envelope falls off
+freqVariance = ...
+    -( BW.^(2).*f0.^(2) )./ ( 8.*(bwRatio./20) ); % Freq. variance [s^-2]
+timeVariance = 1/(4.*pi.^(2).*freqVariance);      % Time Variance [s^2]
+pulseEnvelope = exp(-t.^(2)/(2.*timeVariance));
+pulseSignal = pulseEnvelope.*cos( 2.*pi.*f0.*t );
 
 % Ensure maximum is at +1
 [maxValue, maxIndex] = max( abs(pulseSignal) );
@@ -43,22 +54,27 @@ end
 if plotPulse
     
     % Determine what time scale to plot over
-    tWidth = (1./(BW.*f0));
-    tMiddle = ( t(end) - t(1) )./2;
-    tStart = tMiddle + timeShift./1E3 - tWidth;
-    tEnd = tMiddle + timeShift./1E3 + tWidth;
-%     startIndex = find( t > tStart, t );
-%     endIndex = find( t > tEnd, 1 );
+    numSigmas = 8;
+    timeSigma = sqrt( timeVariance ); % [s]
+    tStart = offset - numSigmas.*timeSigma;
+    tEnd = offset + numSigmas.*timeSigma;
     
-    startIndex = 1;
-    endIndex = length(t);
+    % Get appropriate indices
+    startIndex = find( timeVector > tStart, 1 );
+    endIndex = find( timeVector > tEnd, 1 );
+    if tStart < timeVector(1)
+        startIndex = 1;
+    end
+    if tEnd > timeVector(end)
+        endIndex = length(t);
+    end
     
     
     figure()
     
     % Plot the time series
     subplot( 2, 1, 1 )
-    plot( t(startIndex:endIndex).*1E3,  pulseSignal(startIndex:endIndex) );
+    plot( timeVector(startIndex:endIndex).*1E3,  pulseSignal(startIndex:endIndex) );
     xlabel( 'Time [ms]' );
     ylabel( 'Amplitude [AU]' );
     
@@ -69,9 +85,9 @@ if plotPulse
     fVector = linspace( 0, Fs, length(t(startIndex:endIndex)) );
     spectrum = abs( fft( pulseSignal(startIndex:endIndex) ) );
     spectrumNorm = spectrum./max(spectrum);
-    plot( fVector, spectrumNorm );
+    plot( fVector./1E3, spectrumNorm );
     xlabel( 'Frequency [kHz]' );
-    xlim( [0, Fs./2] );
+    xlim( [0, (Fs./2)./1E3] );
     ylabel( 'Normalized Amplitude [AU]' );
     
     % figure (1)

@@ -106,7 +106,8 @@ coP = (dt/dx)*rho.*c.^2;
 t = 0:dt:stopTime;
 
 %% Define the excitation pulse
-% excit_loc=domain.targets/(1e+3*dx); %location of multiple sources locations
+
+% Set location targets
 c0 = mean(mean(mean(c)));
 lambda = c0./f0;
 deltaR = lambda; % Difference in space [m]
@@ -116,14 +117,26 @@ loc2 = round( [xDim/2 - 2.*deltaPx, yDim/2, zDim/2 ] );
 loc3 = round( [xDim/2 + 2.*deltaPx, yDim/2, zDim/2 ] );
 loc4 = round( [xDim/2, yDim/2 - 2.*deltaPx, zDim/2 ] );
 loc5 = round( [xDim/2, yDim/2 + 2.*deltaPx, zDim/2 ] );
-excit_loc = round( [ loc1; loc2; loc3; loc4; loc5 ] ); %multiple sources locations
-offset = 2.3;
-excit_b = (1480*1000)/(1300*1562)*0.2*pulse(t, f0, BW, offset, bps, 0);  % 21.45   with bubbles  b7.868x with bubble excitation and 5.655 at 440,  4 at 880 kHz and  3.268 at 13200 kHz pulse
-sum(abs(fft(excit_b))/length(t))
-% fig=figure;
-pdata=zeros(xDim,zDim,length(t));
+excit_loc = round( ...
+    [ loc1; loc2; loc3; loc4; loc5 ] );
 
-%% Initilize vectors for coefficients for 2nd order Absorption Boundary Conditions
+% Set the offset and create puse
+offset = 2E-6;
+pulseSignal = pulse(t, f0, BW, offset, bps, 1);
+
+ampFactor = 0.2;
+Z1 = 1480*1000; % Impedance of water [rayls]
+Z2 = 1300*1562; % Impedance 2 [rayls]
+excit_b = ampFactor.*(Z1./Z2).*pulseSignal; % 21.45   with bubbles  b7.868x with bubble excitation and 5.655 at 440,  4 at 880 kHz and  3.268 at 13200 kHz pulse
+
+% sum(abs(fft(excit_b))/length(t))
+
+%% Initilizations
+
+% Vector to hold pressure data at imaging plane
+pdata = zeros( xDim, zDim, length(t) );
+
+% Vectors for coefficients for 2nd order Absorption Boundary Conditions
 pOldup1      = zeros(3,yDim,zDim);
 pOldup2      = zeros(3,yDim,zDim);
 pOlddown1    = zeros(3,yDim,zDim);
@@ -182,7 +195,7 @@ abcCoefback(:,:,2)=-2.0*(temp1 - 1.0./temp1)./temp2;
 abcCoefback(:,:,3)= 4.0*(temp1+1.0./temp1)./temp2;
 
 timepnts=1:5*intconst:length(t)-1;
-t(end)*1e+6
+t(end).*1E6
 for n = 1:length(t)-1;
     
     
@@ -223,9 +236,9 @@ for n = 1:length(t)-1;
     % Compute the z-velocity
     uz = uz - ( 2*(dt/dx)./(rho(:,:,1:end-1) + rho(:,:,2:end)) ).*...
         ( ...
-          ( 1 + ( (delta(:,:,1:end-1) + delta(:,:,2:end))./(2*dt)) ).*...
-            p(:,:,2:end,2) - p(:,:,1:end-1,2) ) - ...
-          ( (delta(:,:,1:end-1) + delta(:,:,2:end))./(2*dt)).* ...
+          ( 1 + ( (delta(:,:,1:end-1) + delta(:,:,2:end) )./(2*dt)) ).*...
+            ( p(:,:,2:end,2) - p(:,:,1:end-1,2) ) - ...
+          ( (delta(:,:,1:end-1) + delta(:,:,2:end))./(2*dt) ).* ...
             ( p(:,:,2:end,1)- p(:,:,1:end-1,1) ) ...
           ); 
     
@@ -326,24 +339,62 @@ for n = 1:length(t)-1;
     
     % Capture the data in the imaging plane 
     pdata(:,:,n) = squeeze( p(:, end-5, :, 3) );
+    
     %% 3D data visualizatioon
-    if plotPropagation
-        v = p(:,:,:,3)*8e6+c;%+0.0*domain.mrvol;%data scaling
-        xslice = [double(excit_loc(trgt,1,1)),xDim]; yslice =[1,double(excit_loc(trgt,2,1)),yDim]; zslice =[1,double(excit_loc(trgt,3,1)),zDim];
-        hsrf=slice(1e3*dx*(1:yDim),1e3*dx*(1:xDim),1e3*dx*(1:zDim),v,1e3*dx*yslice,1e3*dx*xslice,1e3*dx*zslice);
-        set(hsrf,'edgecolor','none','FaceAlpha',0.75)
-        caxis([1e3 3e3])
-        view([25 30]);
-        colormap jet(100)
-        axis([1e3*dx 1e3*dx*xDim 1e3*dx 1e3*dx*yDim 1e3*dx 1e3*dx*zDim])
-        axis equal
-        xlabel('Distances (mm)','FontWeight','bold')
-        %             ylabel('Distance (mm)','FontWeight','bold')
-        zlabel('Distance (mm)','FontWeight','bold')
-        title('3D FDTD Simulation','FontSize',10,'FontWeight','bold')
-        text(55,110,sprintf('Time = %.2f usec',n*dt*1e6),'FontSize',12,'FontWeight','bold','HorizontalAlignment','right')
-        text(85,30,-12,'Costas Arvanitis','FontSize',10,'FontWeight','bold','HorizontalAlignment','right')
-        text(100,25,-12,'Harvard Medical School, BWH','FontSize',10,'FontWeight','bold','HorizontalAlignment','right'); drawnow;
+    if plotPropagation == 1
+        
+        figure(999)
+        set( gca, 'Position', [0.1, 0.12, 0.8, 0.8] );
+        
+        % Scale data
+        v = p(:,:,:,3)*8E6 + c;
+        
+        % Get the slices to plot
+        xslice = [double(excit_loc(trgt,1,1)), xDim]; 
+        yslice = [1, double(excit_loc(trgt,2,1)), yDim]; 
+        zslice = [1, double(excit_loc(trgt,3,1)), zDim];
+        
+        % Plot selected slices
+        hsrf = slice( ...
+            1E3.*dx.*(1:yDim), 1E3.*dx.*(1:xDim), 1E3.*dx.*(1:zDim), v, ...
+            1E3.*dx.*yslice, 1E3.*dx.*xslice, 1E3.*dx.*zslice ...
+            );
+        
+        % Fomat plot
+        set( hsrf, 'edgecolor', 'none', 'FaceAlpha', 0.65);
+        caxis( [1E3, 3E3] )
+        view( [40, 30] );
+        axis( [ ...
+            1E3.*dx, 1E3.*dx*xDim, ...
+            1E3.*dx, 1E3.*dx*yDim, ...
+            1E3.*dx, 1E3.*dx*zDim  ...
+            ] );
+        axis equal;
+        
+        % Set labels
+        xlabel('x Distance [mm]');
+        ylabel('y Distance [mm]')
+        zlabel('z Distance [mm]');
+
+        % Set propagation time display
+        simTime_mus = n.*dt.*1E6;
+        timeDisplayString = sprintf('Time = %.2f us    ', simTime_mus);
+        if n == 1
+            timeDisplayPosition = [ 0.8, 0.0, 0.2, 0.1 ];
+            timeBox = annotation( 'textbox', ...
+                'String', timeDisplayString, ...
+                'Position', timeDisplayPosition, ...
+                'FontSize', 14, ...
+                'EdgeColor', 'None', ...
+                'HorizontalAlignment', 'right' ...
+                );
+        else
+            set( timeBox, 'String', timeDisplayString );
+        end
+        
+        % Update plots
+        drawnow;
+
     end
     
     %% 2D visualisation

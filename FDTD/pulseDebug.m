@@ -1,10 +1,13 @@
-dt = 1E-6;
-t = 0:dt:0.2;
-f0 = 60E3;
-BW = 0.3;
-offset = 0;
-plotPulse = 1;
+clear all
+close all
+clc
 
-expArg = 2.*omegaVec.^(2)./
+
+dt = 5E-7;
+t = 0:dt:0.2;
+f0 = 100E3;
+BW = 0.5;
+offset = 20E-3;
+plotPulse = 1;
 
 x = pulse( t, f0, BW, offset, 0, plotPulse);
