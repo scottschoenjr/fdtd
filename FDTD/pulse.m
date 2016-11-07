@@ -74,7 +74,8 @@ if plotPulse
     
     % Plot the time series
     subplot( 2, 1, 1 )
-    plot( timeVector(startIndex:endIndex).*1E3,  pulseSignal(startIndex:endIndex) );
+    plot( timeVector(startIndex:endIndex).*1E3,  ...
+        pulseSignal(startIndex:endIndex), 'k' );
     xlabel( 'Time [ms]' );
     ylabel( 'Amplitude [AU]' );
     
@@ -85,7 +86,7 @@ if plotPulse
     fVector = linspace( 0, Fs, length(t(startIndex:endIndex)) );
     spectrum = abs( fft( pulseSignal(startIndex:endIndex) ) );
     spectrumNorm = spectrum./max(spectrum);
-    plot( fVector./1E3, spectrumNorm );
+    plot( fVector./1E3, spectrumNorm, 'k' );
     xlabel( 'Frequency [kHz]' );
     xlim( [0, (Fs./2)./1E3] );
     ylabel( 'Normalized Amplitude [AU]' );

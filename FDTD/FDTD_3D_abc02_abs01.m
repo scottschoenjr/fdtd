@@ -28,9 +28,10 @@ intconst = 1;    % Data points to collect images for video
 % -------------------------------------------------------------------------
 
 % Plot options
-plotSkull = 1;
-waterSimulation = 0;
+plotSkull = 0;
+waterSimulation = 1;
 plotPropagation = 1;
+saveMovie = 1;
 
 % Add necessary paths
 addpath( genpath( '..\pam_recon' ) );
@@ -232,7 +233,6 @@ for n = 1:length(t)-1;
           ( (delta(:,1:end-1,:) + delta(:,2:end,:) )./(2*dt) ).* ...
             ( p(:,2:end,:,1) - p(:,1:end-1,:,1) ) ...
           );
-      
     % Compute the z-velocity
     uz = uz - ( 2*(dt/dx)./(rho(:,:,1:end-1) + rho(:,:,2:end)) ).*...
         ( ...
@@ -394,6 +394,11 @@ for n = 1:length(t)-1;
         
         % Update plots
         drawnow;
+        
+        % Save movie if desired
+        if saveMovie == 1
+           movieObject(n) = getframe(gca); 
+        end
 
     end
     
