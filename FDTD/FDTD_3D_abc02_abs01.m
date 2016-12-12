@@ -1,6 +1,6 @@
 %**************************************************************************
 %
-% Finite difference time domain simulation
+% Finite difference time domain simulation (3D)
 %
 %   Code simulates the propagation of a microbubble emission (pulse) in the
 %   brain. Tissue and skull dimensions are taken from CT scan data.
@@ -17,7 +17,7 @@ clc;
 
 % Inputs ------------------------------------------------------------------
 bps='n';        % Choose exitation pulse "y' is from bubble dynamics
-trgt = 5;       % select the location of the point sourec
+trgt = 1;       % select the location of the point sourec
 f0 = 0.88e6;    % Mean frequency of the excitation pulse in [Hz]
 w = f0*2*pi;    % Angular frequency [rad/s]
 BW = 0.6;       % Fractional bandwidth of source 
