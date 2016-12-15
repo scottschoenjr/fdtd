@@ -24,17 +24,17 @@ clc;
 res = 0.1250; % [mm]
 
 % Set x- and z- vectors
-xRange = [0, 200]./1E3; % [m]
+xRange = [0, 80]./1E3; % [m]
 yRange = [0, 80]./1E3; % [m]
 
 % Get number of points in each direction
-xx = xRange(1) : res./1E3 : xRange(2);
-yy = yRange(1) : res./1E3 : yRange(2);
+xx = xRange(1) : res./1E3 : xRange(2); % [m]
+yy = yRange(1) : res./1E3 : yRange(2); % [m]
+[x, y] = meshgrid(xx, yy);
 
-% Define density and sound speed profiles
-[y, x] = meshgrid(yy, xx);
+% Define density and sound speed profiles as a function of position
 extrhotot = 1000.*ones( length(yy), length(xx) ); % [kg/m^3]
-extctot = 1500.*ones( length(yy), length(xx) );   % [m/s]
+extctot = (1440.*(1 + y))';   % [m/s]
 extatttot = 1500.*ones( length(yy), length(xx) ); % [Np/m]
 
 % Prompt user for filename

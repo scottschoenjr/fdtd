@@ -11,11 +11,10 @@
 %   f0        - Center frequency of pulse [Hz]
 %   BW        - Fractional bandwidth of pulse
 %   offset    - Time offset from center of signal
-%   bps       - Use bubble dynamics (used if bps == 1)
 %   plotPulse - Display waveform and spectrum (plotted if == 1)
 %
 % Returns
-%   excit_b - Time series pulse
+%   pulseSignal - Time series pulse
 %
 % Change Log
 %   2013XXXX Dr Costas Arvanitis   Original
@@ -23,13 +22,13 @@
 %
 %**************************************************************************
 
-function pulseSignal = pulse( timeVector, f0, BW, offset, bps, plotPulse)
+function pulseSignal = pulse( timeVector, f0, BW, offset, plotPulse)
 
 % Apply shift
 t = timeVector - offset;
 
 % If not specified, do not plot pulse
-if nargin < 6
+if nargin < 5
     plotPulse = 0;
 end
 
@@ -91,67 +90,7 @@ if plotPulse
     xlim( [0, (Fs./2)./1E3] );
     ylabel( 'Normalized Amplitude [AU]' );
     
-    % figure (1)
-    % subplot(2,2,1);title('Time Trace','FontWeight','bold')
-    % plot(1e6*t(1:600),0.2*excit_b(1:600),'k')
-    % xlabel('Time (Sec)','FontWeight','bold')
-    % ylabel('Amplitude (a.u.)','FontWeight','bold')
-    % hold on
-    % subplot(2,2,2);title('Power Spectrum','FontWeight','bold')
-    % freq=(0:length(t))/dt/length(t);
-    % ampl=0.2*(abs(fft(excit_b))/length(t));
-    % plot(1e-6*freq(1:500),ampl(1:500),'k')
-    % xlabel('Frequency (kHz)','FontWeight','bold')
-    % ylabel('Amplitude (a.u.)','FontWeight','bold')
-    % sum(ampl)
-    % hold on
-    
 end
-if (bps=='y')         
-bbl=load('C:\work_material\data\in_vivo\monkey\PUS\06232012\nhp01\Registered_data\mr_ct_simdata\analysis\point sources\BubbleSim_pulse_440.mat');
-dt1=bbl.simulation.tr(2);
-pulseSignal=bbl.simulation.pr(1:(dt/dt1):end);
-pulseSignal=[pulseSignal;pulseSignal(end)*ones(length(t)-length(pulseSignal),1)];
-end
-% excit_b=excit_b/sum(abs(excit_b));
 
-% figure
-% subplot(2,2,3);title('Time Trace','FontWeight','bold')
-% plot(1e6*t(1:600),4.2364*excit_b(1:600),'k')
-% xlabel('Time (usec)','FontWeight','bold')
-% ylabel('Presure (Pa)','FontWeight','bold')
-% subplot(2,2,4);title('Power Spectrum','FontWeight','bold')
-% freq=(0:length(t))/dt/length(t);
-% ampl=4.2364*(abs(fft(excit_b))/length(t));
-% plot(1e-6*freq(1:500),ampl(1:500),'k')
-% xlabel('Frequency (kHz)','FontWeight','bold')
-% ylabel('Amplitude','FontWeight','bold')
-% sum(ampl)
-% Atempt to create sinusoidal pulse
-% A=2;
-% f= 500000;
-% phi=0;
-% a=100000;
-% 
-% dt=.0000001;
-% f=f*2*pi;
-% t=0:dt:dt*1e3;
-% y1=A*sin(f*t + phi).*exp(-a*t)+A/2*sin(2*f*t + phi).*exp(-a*t)+A/3*sin(3*f*t + phi).*exp(-a*t);
-% y2=flipdim(-A*sin(f*t + phi).*exp(-a*t),2)+flipdim(-A/2*sin(2*f*t + phi).*exp(-a*t),2)+flipdim(-A/3*sin(3*f*t + phi).*exp(-a*t),2);
-% y=[y2(1:end-1),y1];
-% t=0:dt:2*dt*1e3;
-% 
-% % axis([0 1 -2.2 2.2]);
-% 
-% figure
-% subplot(1,2,1);title('Time Trace','FontWeight','bold')
-% plot(t,y)
-% xlabel('Time (Sec)','FontWeight','bold')
-% ylabel('Amplitude (a.u.)','FontWeight','bold')
-% subplot(1,2,2);title('Power Spectrum','FontWeight','bold')
-% freq=(0:length(t))/dt/length(t);
-% ampl=(abs(fft(y))/length(t)).^2;
-% plot(freq(1:end-1),ampl)
-% xlabel('Frequency (Hz)','FontWeight','bold')
-% ylabel('Amplitude (a.u.)','FontWeight','bold')
+end
 
